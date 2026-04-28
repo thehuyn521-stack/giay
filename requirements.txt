@@ -1,0 +1,6 @@
+aiohttp
+requests
+beautifulsoup4
+lxml
+rapidfuzz
+python-dotenv
