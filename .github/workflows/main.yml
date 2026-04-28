@@ -3,7 +3,7 @@ name: Sneaker Bot Runner
 on:
   schedule:
     # Chạy mỗi 15 phút một lần
-    - cron: '*/15 * * * *'
+    - cron: '*/20 * * * *'
   workflow_dispatch: # Cho phép bạn bấm nút chạy thủ công bất cứ lúc nào
 
 jobs:
