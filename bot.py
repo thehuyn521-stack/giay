@@ -228,58 +228,41 @@ def should_alert(key, ratio):
     return False
 
 # ================= MAIN =================
+# ================= MAIN =================
 async def main():
-    print("ALPHA BOT RUNNING...")
+    print("GitHub Action bắt đầu quét...")
 
     async with aiohttp.ClientSession() as session:
-        while True:
-            try:
-                nike, end, stockx, goat = await asyncio.gather(
-                    nike_launch(session),
-                    end_launch(session),
-                    stockx_public(session),
-                    goat_fallback(session)
-                )
+        # Xóa bỏ 'while True' để bot chạy xong 1 lần rồi tự đóng
+        try:
+            nike, end, stockx, goat = await asyncio.gather(
+                nike_launch(session),
+                end_launch(session),
+                stockx_public(session),
+                goat_fallback(session)
+            )
 
-                retail = nike
-                resale = stockx or goat or []
+            retail = nike
+            resale = stockx or goat or []
 
-                merged = match(retail, resale)
-                deals = filter_deals(merged)
+            merged = match(retail, resale)
+            deals = filter_deals(merged)
 
-                for d in deals:
-                    key = d["sku"] or d["name"]
+            for d in deals:
+                key = d["sku"] or d["name"]
+                if should_alert(key, d["ratio"]):
+                    tag = "🔥 COLLAB" if d["collab"] else "💰 NORMAL"
+                    msg = f"{tag}\n{d['name']}\nSKU: {d['sku']}\nRatio: x{d['ratio']}\nProfit: ¥{d['profit']}"
+                    send(msg)
 
-                    if should_alert(key, d["ratio"]):
-                        tag = "🔥 COLLAB" if d["collab"] else "💰 NORMAL"
-
-                        msg = f"""
-{tag}
-{d['name']}
-SKU: {d['sku']}
-
-Retail: ¥{d['retail']}
-Resale: ¥{d['resale']}
-Profit: ¥{d['profit']}
-Ratio: x{d['ratio']}
-Volume: {d['volume']}
-Source: {d['source']}
-"""
-                        print(msg)
-                        send(msg)
-
-                # raffle alert
-                for r in end:
-                   key = r["name"]
-                   if key not in sent_cache:
-                       sent_cache[key] = {"t": time.time()}
-                       send(f"🎟 RAFFLE\n{r['name']}")
-                
-                    
-            except Exception as e:
-                error(str(e))
-
-            await asyncio.sleep(CHECK_INTERVAL)
+            # Check Raffle
+            for r in end:
+                key = r["name"]
+                if key not in sent_cache:
+                    send(f"🎟 RAFFLE\n{r['name']}")
+            
+        except Exception as e:
+            print(f"Lỗi: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())
